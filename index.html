@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>🎵 部室予約 - 七夕祭</title>
+  <title>部室予約 - 七夕祭</title>
   <style>
     * {
       box-sizing: border-box;
@@ -121,6 +121,11 @@
       flex-shrink: 0;
       background: #F8F9FB;
       border-bottom: 1.5px solid #CDD7E5;
+    
+      position: sticky;
+      top: 0;
+      left: 0;
+      z-index: 5;
     }
 
     .time-axis-body {
@@ -215,15 +220,21 @@
       color: #FFD54F;
     }
 
-    .day-body {
-      flex: 1;
-      position: relative;
-      background:
-        repeating-linear-gradient(to bottom,
-          transparent,
-          transparent calc(var(--hour-px) - 1px),
-          #ECEFF4 calc(var(--hour-px) - 1px),
-          #ECEFF4 var(--hour-px));
+    .day-header {
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #F8F9FB;
+      border-bottom: 1.5px solid #CDD7E5;
+      font-weight: bold;
+      font-size: 12px;
+      color: #555;
+      position: sticky; /* ←変更 */
+      top: 0;           /* ←追加 */
+      z-index: 4;       /* ←追加 */
     }
 
     .track-half-hour-line {
@@ -786,7 +797,7 @@
 <body>
   <div class="container">
     <div class="app-header">
-      <h1>🎵 部室予約</h1>
+      <h1>部室予約</h1>
       <p>七夕祭 2026 / 8:30-21:00 / 最大1時間30分</p>
     </div>
 
@@ -798,7 +809,7 @@
     <div id="main-content" style="display:none;">
       <div class="timetable-card">
         <div class="card-title-row">
-          <div class="card-title">📅 予約状況</div>
+          <div class="card-title">予約状況</div>
           <div class="card-hint">予約をタップで取消 / 横スクロール可</div>
         </div>
         <div class="tt-scroll" id="tt-scroll">
