@@ -78,15 +78,15 @@
       background: white;
       border-radius: 14px;
       box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-      margin-bottom: 14px;
+
+      overflow: visible;
     }
 
     .tt-scroll {
       overflow: auto;
       -webkit-overflow-scrolling: touch;
       height: calc(100vh - 220px);
-      ;
+      position: relative;
     }
 
     .tt-scroll::-webkit-scrollbar {
@@ -109,7 +109,8 @@
       flex-shrink: 0;
       position: sticky;
       left: 0;
-      z-index: 3;
+      top: 0;
+      z-index: 40;
       background: white;
       border-right: 1.5px solid #CDD7E5;
       display: flex;
@@ -121,11 +122,10 @@
       flex-shrink: 0;
       background: #F8F9FB;
       border-bottom: 1.5px solid #CDD7E5;
-    
+
       position: sticky;
       top: 0;
-      left: 0;
-      z-index: 5;
+      z-index: 30;
     }
 
     .time-axis-body {
@@ -162,18 +162,24 @@
     }
 
     .day-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+
       height: 48px;
       flex-shrink: 0;
+
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+
       background: #F8F9FB;
       border-bottom: 1.5px solid #CDD7E5;
+
       font-weight: bold;
       font-size: 12px;
       color: #555;
-      position: relative;
     }
 
     .day-header.sat {
@@ -220,21 +226,8 @@
       color: #FFD54F;
     }
 
-    .day-header {
-      height: 48px;
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #F8F9FB;
-      border-bottom: 1.5px solid #CDD7E5;
-      font-weight: bold;
-      font-size: 12px;
-      color: #555;
-      position: sticky; /* ←変更 */
-      top: 0;           /* ←追加 */
-      z-index: 4;       /* ←追加 */
+    .day-body {
+      position: relative;
     }
 
     .track-half-hour-line {
