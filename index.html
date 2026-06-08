@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <title>🎵 部室予約 - 七夕祭</title>
   <style>
-    * { box-sizing: border-box; }
-    html, body {
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', 'メイリオ', sans-serif;
@@ -15,22 +20,35 @@
       -webkit-text-size-adjust: 100%;
       min-height: 100vh;
     }
+
     .container {
       max-width: 1100px;
       margin: 0 auto;
       padding: 16px;
       padding-bottom: 100px;
     }
+
     .app-header {
       background: linear-gradient(135deg, #1F4E78 0%, #2E75B6 100%);
       color: white;
       padding: 20px 18px;
       border-radius: 14px;
       margin-bottom: 16px;
-      box-shadow: 0 4px 14px rgba(31,78,120,0.18);
+      box-shadow: 0 4px 14px rgba(31, 78, 120, 0.18);
     }
-    .app-header h1 { margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px; }
-    .app-header p { margin: 6px 0 0; font-size: 12px; opacity: 0.92; }
+
+    .app-header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .app-header p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      opacity: 0.92;
+    }
 
     .card-title-row {
       display: flex;
@@ -41,12 +59,14 @@
       border-radius: 14px 14px 0 0;
       border-bottom: 1px solid #ECEFF1;
     }
+
     .card-title {
       font-size: 14px;
       font-weight: bold;
       color: #1F4E78;
       letter-spacing: 0.3px;
     }
+
     .card-hint {
       font-size: 11px;
       color: #888;
@@ -56,22 +76,33 @@
     .timetable-card {
       background: white;
       border-radius: 14px;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.06);
       overflow: hidden;
       margin-bottom: 14px;
     }
+
     .tt-scroll {
       overflow: auto;
       -webkit-overflow-scrolling: touch;
-      height: calc(100vh - 220px);;
+      height: calc(100vh - 220px);
+      ;
     }
-    .tt-scroll::-webkit-scrollbar { height: 8px; }
-    .tt-scroll::-webkit-scrollbar-thumb { background: #CDD7E5; border-radius: 4px; }
+
+    .tt-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .tt-scroll::-webkit-scrollbar-thumb {
+      background: #CDD7E5;
+      border-radius: 4px;
+    }
+
     .tt {
       display: flex;
       align-items: stretch;
       min-width: max-content;
     }
+
     .time-axis-col {
       width: 54px;
       flex-shrink: 0;
@@ -83,16 +114,19 @@
       display: flex;
       flex-direction: column;
     }
+
     .empty-corner {
       height: 48px;
       flex-shrink: 0;
       background: #F8F9FB;
       border-bottom: 1.5px solid #CDD7E5;
     }
+
     .time-axis-body {
       position: relative;
       flex: 1;
     }
+
     .time-label {
       position: absolute;
       right: 6px;
@@ -103,10 +137,12 @@
       transform: translateY(-50%);
       letter-spacing: 0.3px;
     }
+
     .time-label.major {
       color: #1F4E78;
       font-size: 11px;
     }
+
     .day-col {
       width: 92px;
       flex-shrink: 0;
@@ -114,7 +150,11 @@
       display: flex;
       flex-direction: column;
     }
-    .day-col:last-child { border-right: none; }
+
+    .day-col:last-child {
+      border-right: none;
+    }
+
     .day-header {
       height: 48px;
       flex-shrink: 0;
@@ -129,23 +169,38 @@
       color: #555;
       position: relative;
     }
-    .day-header.sat { color: #1565C0; background: #F0F7FF; }
-    .day-header.sun { color: #C62828; background: #FFF4F4; }
+
+    .day-header.sat {
+      color: #1565C0;
+      background: #F0F7FF;
+    }
+
+    .day-header.sun {
+      color: #C62828;
+      background: #FFF4F4;
+    }
+
     .day-header.today {
       background: linear-gradient(135deg, #1F4E78, #2E75B6);
       color: white;
     }
+
     .day-header.today.sat,
-    .day-header.today.sun { color: white; }
+    .day-header.today.sun {
+      color: white;
+    }
+
     .day-header .date-md {
       font-size: 13px;
       line-height: 1.1;
     }
+
     .day-header .date-wd {
       font-size: 10px;
       opacity: 0.85;
       margin-top: 1px;
     }
+
     .day-restriction {
       position: absolute;
       top: 2px;
@@ -154,19 +209,22 @@
       color: #FB8C00;
       font-weight: bold;
     }
-    .day-header.today .day-restriction { color: #FFD54F; }
+
+    .day-header.today .day-restriction {
+      color: #FFD54F;
+    }
+
     .day-body {
       flex: 1;
       position: relative;
       background:
-        repeating-linear-gradient(
-          to bottom,
+        repeating-linear-gradient(to bottom,
           transparent,
           transparent calc(var(--hour-px) - 1px),
           #ECEFF4 calc(var(--hour-px) - 1px),
-          #ECEFF4 var(--hour-px)
-        );
+          #ECEFF4 var(--hour-px));
     }
+
     .track-half-hour-line {
       position: absolute;
       left: 0;
@@ -174,6 +232,7 @@
       border-top: 1px dashed #F0F2F5;
       pointer-events: none;
     }
+
     .reservation-block {
       position: absolute;
       left: 3px;
@@ -183,16 +242,21 @@
       border-radius: 5px;
       padding: 4px 6px;
       overflow: hidden;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
       cursor: pointer;
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
+
     .reservation-block:hover {
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
       filter: brightness(1.02);
     }
-    .reservation-block:active { transform: scale(0.98); }
+
+    .reservation-block:active {
+      transform: scale(0.98);
+    }
+
     .res-band {
       font-size: 11px;
       font-weight: bold;
@@ -202,17 +266,25 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     .res-time {
       font-size: 9px;
       color: #8A6B00;
       font-family: 'Roboto Mono', 'Menlo', monospace;
       margin-top: 1px;
     }
-    .reservation-block.small .res-time { display: none; }
+
+    .reservation-block.small .res-time {
+      display: none;
+    }
+
     .reservation-block.small {
       padding: 2px 5px;
     }
-    .reservation-block.small .res-band { font-size: 10px; }
+
+    .reservation-block.small .res-band {
+      font-size: 10px;
+    }
 
     .now-indicator {
       position: absolute;
@@ -237,7 +309,7 @@
       font-size: 28px;
       font-weight: bold;
       cursor: pointer;
-      box-shadow: 0 6px 18px rgba(31,78,120,0.4);
+      box-shadow: 0 6px 18px rgba(31, 78, 120, 0.4);
       z-index: 100;
       -webkit-tap-highlight-color: transparent;
       font-family: inherit;
@@ -245,22 +317,48 @@
       align-items: center;
       justify-content: center;
     }
-    .fab:active { transform: scale(0.95); }
+
+    .fab:active {
+      transform: scale(0.95);
+    }
 
     /* ==================== モーダル ==================== */
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.55);
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.55);
       display: none;
       align-items: flex-end;
       justify-content: center;
       z-index: 1000;
       padding: 0;
     }
-    .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @media (min-width: 600px) { .modal-overlay { align-items: center; padding: 16px; } }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @media (min-width: 600px) {
+      .modal-overlay {
+        align-items: center;
+        padding: 16px;
+      }
+    }
+
     .modal {
       background: white;
       width: 100%;
@@ -270,8 +368,23 @@
       border-radius: 16px 16px 0 0;
       animation: slideUp 0.25s ease-out;
     }
-    @keyframes slideUp { from { transform: translateY(20px); } to { transform: translateY(0); } }
-    @media (min-width: 600px) { .modal { border-radius: 16px; } }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(20px);
+      }
+
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 600px) {
+      .modal {
+        border-radius: 16px;
+      }
+    }
+
     .modal-header {
       padding: 16px 20px;
       border-bottom: 1px solid #ECEFF1;
@@ -283,7 +396,13 @@
       background: white;
       z-index: 1;
     }
-    .modal-title { font-size: 17px; font-weight: bold; color: #1F4E78; }
+
+    .modal-title {
+      font-size: 17px;
+      font-weight: bold;
+      color: #1F4E78;
+    }
+
     .modal-close {
       background: none;
       border: none;
@@ -293,11 +412,25 @@
       padding: 4px 8px;
       font-family: inherit;
     }
-    .modal-body { padding: 20px; }
-    .modal-footer { padding: 14px 20px 22px; display: flex; gap: 10px; }
-    .modal-footer .btn { flex: 1; }
 
-    .field { margin-bottom: 16px; }
+    .modal-body {
+      padding: 20px;
+    }
+
+    .modal-footer {
+      padding: 14px 20px 22px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .modal-footer .btn {
+      flex: 1;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
     .field-label {
       display: block;
       font-size: 12px;
@@ -306,8 +439,15 @@
       margin-bottom: 6px;
       letter-spacing: 0.3px;
     }
-    .required { color: #C62828; font-size: 11px; margin-left: 4px; }
-    select, input {
+
+    .required {
+      color: #C62828;
+      font-size: 11px;
+      margin-left: 4px;
+    }
+
+    select,
+    input {
       width: 100%;
       padding: 12px 14px;
       font-size: 16px;
@@ -319,6 +459,7 @@
       -webkit-appearance: none;
       appearance: none;
     }
+
     select {
       background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2212%22 height%3D%228%22 viewBox%3D%220 0 12 8%22%3E%3Cpath fill%3D%22%23666%22 d%3D%22M6 8L0 0h12z%22%2F%3E%3C%2Fsvg%3E");
       background-repeat: no-repeat;
@@ -326,13 +467,23 @@
       background-size: 10px;
       padding-right: 36px;
     }
-    select:focus, input:focus {
+
+    select:focus,
+    input:focus {
       outline: none;
       border-color: #2E75B6;
-      box-shadow: 0 0 0 3px rgba(46,117,182,0.15);
+      box-shadow: 0 0 0 3px rgba(46, 117, 182, 0.15);
     }
-    .row { display: flex; gap: 10px; }
-    .row > .field { flex: 1; min-width: 0; }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row>.field {
+      flex: 1;
+      min-width: 0;
+    }
 
     .type-tabs {
       display: flex;
@@ -342,6 +493,7 @@
       padding: 4px;
       border-radius: 10px;
     }
+
     .type-tab {
       flex: 1;
       padding: 10px;
@@ -356,10 +508,11 @@
       font-family: inherit;
       -webkit-tap-highlight-color: transparent;
     }
+
     .type-tab.active {
       background: white;
       color: #1F4E78;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     }
 
     .summary {
@@ -372,8 +525,16 @@
       color: #1F4E78;
       line-height: 1.6;
     }
-    .summary .band-name { font-weight: bold; font-size: 15px; }
-    .summary-empty { color: #888; font-style: italic; }
+
+    .summary .band-name {
+      font-weight: bold;
+      font-size: 15px;
+    }
+
+    .summary-empty {
+      color: #888;
+      font-style: italic;
+    }
 
     .restriction-banner {
       background: #FFF3E0;
@@ -393,8 +554,20 @@
       margin: 10px 0;
       display: none;
     }
-    .msg.error { background: #FCE4E4; color: #B71C1C; border: 1px solid #EF9A9A; display: block; }
-    .msg.success { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; display: block; }
+
+    .msg.error {
+      background: #FCE4E4;
+      color: #B71C1C;
+      border: 1px solid #EF9A9A;
+      display: block;
+    }
+
+    .msg.success {
+      background: #E8F5E9;
+      color: #1B5E20;
+      border: 1px solid #A5D6A7;
+      display: block;
+    }
 
     .btn {
       padding: 13px;
@@ -407,29 +580,57 @@
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
     }
+
     .btn-primary {
       background: linear-gradient(135deg, #1F4E78, #2E75B6);
       color: white;
-      box-shadow: 0 2px 8px rgba(31,78,120,0.25);
+      box-shadow: 0 2px 8px rgba(31, 78, 120, 0.25);
     }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-primary:disabled { background: #B0B0B0; cursor: not-allowed; box-shadow: none; }
-    .btn-cancel { background: #E0E0E0; color: #333; }
-    .btn-danger { background: #C62828; color: white; }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
+      background: #B0B0B0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-cancel {
+      background: #E0E0E0;
+      color: #333;
+    }
+
+    .btn-danger {
+      background: #C62828;
+      color: white;
+    }
 
     .spinner {
       display: inline-block;
       width: 14px;
       height: 14px;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
       vertical-align: middle;
       margin-right: 6px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-screen { text-align: center; padding: 60px 20px; color: #666; }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-screen {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
     .loading-screen .spinner {
       width: 32px;
       height: 32px;
@@ -438,6 +639,7 @@
       margin: 0 auto 16px;
       display: block;
     }
+
     .toast {
       position: fixed;
       bottom: 100px;
@@ -449,17 +651,137 @@
       border-radius: 24px;
       font-size: 13px;
       font-weight: bold;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
       z-index: 2000;
       opacity: 0;
       transition: opacity 0.25s;
       pointer-events: none;
     }
-    .toast.show { opacity: 1; }
-    .toast.error { background: #B71C1C; }
-    .toast.success { background: #2E7D32; }
+
+    .toast.show {
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: #B71C1C;
+    }
+
+    .toast.success {
+      background: #2E7D32;
+    }
+
+    .tutorial-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 5000;
+      touch-action: none;
+    }
+
+    .tutorial-highlight {
+      position: fixed;
+      border-radius: 18px;
+      box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.55);
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+
+    .tutorial-card {
+      position: fixed;
+      width: min(280px, calc(100vw - 32px));
+      background: white;
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      pointer-events: auto;
+      transition:
+        left 0.25s ease,
+        top 0.25s ease;
+      z-index: 5001;
+    }
+
+    .tutorial-title {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .tutorial-text {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .tutorial-actions {
+      margin-top: 14px;
+    }
+
+    .tutorial-skip,
+    .tutorial-next {
+      padding: 9px 14px;
+      font-size: 13px;
+    }
+
+    .tutorial-step {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+    }
+
+    .tutorial-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #1F4E78;
+      margin-bottom: 8px;
+    }
+
+    .tutorial-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #444;
+    }
+
+    .tutorial-actions {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+    }
+
+    .tutorial-skip,
+    .tutorial-next {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-weight: bold;
+      font-family: inherit;
+    }
+
+    .tutorial-skip {
+      background: #E0E0E0;
+    }
+
+    .tutorial-next {
+      background: #1F4E78;
+      color: white;
+    }
+
+    body.tutorial-active {
+      overflow: hidden;
+    }
+
+    body.tutorial-active .tt-scroll {
+      pointer-events: none;
+    }
+
+    body.tutorial-active .fab {
+      pointer-events: none;
+    }
+
+    body.tutorial-active .reservation-block {
+      pointer-events: none;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="app-header">
@@ -559,7 +881,8 @@
         <div style="font-size:14px; line-height:1.6; margin-bottom:12px;">
           以下の予約を取り消します。
         </div>
-        <div class="summary" id="cancel-detail" style="border-left-color:#C62828; background:#FFEBEE; color:#B71C1C;"></div>
+        <div class="summary" id="cancel-detail" style="border-left-color:#C62828; background:#FFEBEE; color:#B71C1C;">
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-cancel" onclick="closeCancelModal()" id="cancel-no">戻る</button>
@@ -569,6 +892,21 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <div id="tutorial-overlay" class="tutorial-overlay" style="display:none;">
+    <div class="tutorial-highlight" id="tutorial-highlight"></div>
+
+    <div class="tutorial-card">
+      <div class="tutorial-step" id="tutorial-step">1 / 3</div>
+      <div class="tutorial-title" id="tutorial-title"></div>
+      <div class="tutorial-text" id="tutorial-text"></div>
+
+      <div class="tutorial-actions">
+        <button onclick="skipTutorial()" class="tutorial-skip">スキップ</button>
+        <button onclick="nextTutorial()" class="tutorial-next">次へ</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     // ==================== 設定 ====================
@@ -603,6 +941,7 @@
     }
 
     async function init() {
+
       try {
         const data = await apiGet();
         if (!data.ok) throw new Error(data.msg || 'データ取得失敗');
@@ -612,12 +951,24 @@
 
         document.getElementById('loading').style.display = 'none';
         document.getElementById('main-content').style.display = 'block';
-        document.getElementById('fab').style.display = 'flex';
+        const fab = document.getElementById('fab');
+
+        fab.style.display = 'flex';
 
         renderTimetable();
         setupForm();
-        // 今日の列までスクロール
         scrollToToday();
+
+        if (!localStorage.getItem('tutorialDone')) {
+          // チュートリアル開始まで押せないようにする
+          fab.style.pointerEvents = 'none';
+
+          setTimeout(() => {
+            startTutorial();
+          }, 600);
+        } else {
+          fab.style.pointerEvents = 'auto';
+        }
       } catch (err) {
         document.getElementById('loading').innerHTML =
           '<div style="color:#C00000; padding:20px;">⚠ データ取得失敗<br><span style="font-size:12px;">' + esc(err.message) + '</span></div>';
@@ -722,10 +1073,21 @@
       const todayStr = formatDateLocal(new Date());
       const todayCol = document.querySelector(`.day-col[data-date="${todayStr}"]`);
       const scrollEl = document.getElementById('tt-scroll');
+
+      console.log(todayCol)
+
       if (todayCol && scrollEl) {
-        // スクロール位置: 今日の列を左端に近づける（時間軸列の右隣）
-        const offset = todayCol.offsetLeft - 60;
-        scrollEl.scrollTo({ left: Math.max(0, offset), behavior: 'smooth' });
+        const axisWidth =
+          document.querySelector('.time-axis-col')?.offsetWidth + scrollEl.offsetLeft || 54;
+
+        console.log(todayCol.offsetLeft)
+
+        const offset = todayCol.offsetLeft - axisWidth;
+
+        scrollEl.scrollTo({
+          left: Math.max(0, offset),
+          behavior: 'instant'
+        });
       }
     }
 
@@ -758,7 +1120,7 @@
       const todayOpt = CONFIG.dates.find(d => d.key === todayStr) || CONFIG.dates[0];
       if (todayOpt) document.getElementById('form-date').value = todayOpt.key;
 
-      ['form-band','form-date','form-class-select','form-start','form-end'].forEach(id => {
+      ['form-band', 'form-date', 'form-class-select', 'form-start', 'form-end'].forEach(id => {
         document.getElementById(id).addEventListener('change', updateFormSummary);
       });
     }
@@ -980,10 +1342,196 @@
 
     function esc(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
-        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    const tutorialSteps = [
+      {
+        target: '#fab',
+        title: '予約を追加',
+        text: '右下の＋ボタンから新しい予約を追加できます。'
+      },
+      {
+        target: '.reservation-block',
+        title: '予約を取り消し',
+        text: '予約をタップするとキャンセルできます。'
+      },
+      {
+        target: '#tt-scroll',
+        title: '横スクロール',
+        text: '横にスクロールして別の日付を確認できます。'
+      }
+    ];
+
+    const tutorialDummyReservations = [
+      {
+        id: 'tutorial-1',
+        band: 'サンプルバンド',
+        date: CONFIG ? CONFIG.dates[0].key : '',
+        start: '13:00',
+        end: '14:00'
+      }
+    ];
+
+    let tutorialIndex = 0;
+
+    let tutorialBackupReservations = [];
+
+    function startTutorial() {
+      document.body.classList.add('tutorial-active');
+
+      tutorialBackupReservations = [...RESERVATIONS];
+
+      // ダミー予約を追加
+      const firstDate = CONFIG.dates[0]?.key;
+
+      RESERVATIONS = [
+        {
+          id: 'tutorial-1',
+          band: 'サンプルバンド',
+          date: firstDate,
+          start: '13:00',
+          end: '14:00'
+        }
+      ];
+
+      renderTimetable();
+
+      scrollToToday();
+
+      document.getElementById('tutorial-overlay').style.display = 'block';
+
+      tutorialIndex = 0;
+
+      renderTutorialStep();
+    }
+
+    function renderTutorialStep() {
+      const step = tutorialSteps[tutorialIndex];
+      const el = document.querySelector(step.target);
+
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+
+      const hl = document.getElementById('tutorial-highlight');
+
+      hl.style.borderRadius =
+        step.target === '#fab'
+          ? '999px'
+          : '18px';
+
+      hl.style.left = (rect.left - 8) + 'px';
+      hl.style.top = (rect.top - 8) + 'px';
+      hl.style.width = (rect.width + 16) + 'px';
+      hl.style.height = (rect.height + 16) + 'px';
+
+      // テキスト更新
+      document.getElementById('tutorial-step').textContent =
+        `${tutorialIndex + 1} / ${tutorialSteps.length}`;
+
+      document.getElementById('tutorial-title').textContent =
+        step.title;
+
+      document.getElementById('tutorial-text').textContent =
+        step.text;
+
+      const nextBtn = document.querySelector('.tutorial-next');
+
+      nextBtn.textContent =
+        tutorialIndex === tutorialSteps.length - 1
+          ? '完了'
+          : '次へ';
+
+      // ===== カード位置 =====
+      const card = document.querySelector('.tutorial-card');
+
+      const margin = 14;
+
+      let left = rect.left;
+      let top = rect.bottom + margin;
+
+      // 右にはみ出す防止
+      const cardWidth = 280;
+
+      if (left + cardWidth > window.innerWidth - 16) {
+        left = window.innerWidth - cardWidth - 16;
+      }
+
+      if (left < 16) {
+        left = 16;
+      }
+
+      // 下にはみ出したら上に出す
+      if (top + 220 > window.innerHeight) {
+        top = rect.top - 220 - margin;
+      }
+
+      // 上にも出られない場合
+      if (top < 16) {
+        top = 16;
+      }
+
+      card.style.left = left + 'px';
+      card.style.top = top + 'px';
+    }
+
+    function nextTutorial() {
+      tutorialIndex++;
+
+      if (tutorialIndex >= tutorialSteps.length) {
+        finishTutorial();
+        return;
+      }
+
+      // 予約説明時に見える位置へ
+      //   if (tutorialIndex === 1) {
+      //   const res = document.querySelector('.reservation-block');
+      //   const scroll = document.getElementById('tt-scroll');
+
+      //   if (res && scroll) {
+      //     const resRect = res.getBoundingClientRect();
+      //     const scrollRect = scroll.getBoundingClientRect();
+
+      //     scroll.scrollTo({
+      //       left:
+      //         scroll.scrollLeft +
+      //         (resRect.left - scrollRect.left) -
+      //         scroll.clientWidth / 2 +
+      //         res.clientWidth / 2,
+
+      //       top:
+      //         scroll.scrollTop +
+      //         (resRect.top - scrollRect.top) -
+      //         scroll.clientHeight / 2 +
+      //         res.clientHeight / 2,
+
+      //       behavior: 'smooth'
+      //     });
+      //   }
+      // }
+
+      renderTutorialStep();
+    }
+
+    function skipTutorial() {
+      finishTutorial();
+    }
+
+    function finishTutorial() {
+      document.body.classList.remove('tutorial-active');
+
+      RESERVATIONS = tutorialBackupReservations;
+
+      renderTimetable();
+
+      document.getElementById('tutorial-overlay').style.display = 'none';
+
+      localStorage.setItem('tutorialDone', '1');
     }
 
     init();
   </script>
 </body>
+
 </html>
