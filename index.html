@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>🎵 部室予約 - 七夕祭</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Yu Gothic UI', 'メイリオ', sans-serif;
+      background: #F4F6FA;
+      color: #2A2A2A;
+      -webkit-text-size-adjust: 100%;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      padding-bottom: 100px;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #1F4E78 0%, #2E75B6 100%);
+      color: white;
+      padding: 20px 18px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px rgba(31,78,120,0.18);
+    }
+    .app-header h1 { margin: 0; font-size: 22px; font-weight: bold; letter-spacing: 0.5px; }
+    .app-header p { margin: 6px 0 0; font-size: 12px; opacity: 0.92; }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: white;
+      border-radius: 14px 14px 0 0;
+      border-bottom: 1px solid #ECEFF1;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #1F4E78;
+      letter-spacing: 0.3px;
+    }
+    .card-hint {
+      font-size: 11px;
+      color: #888;
+    }
+
+    /* ==================== タイムテーブル ==================== */
+    .timetable-card {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .tt-scroll {
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      height: calc(100vh - 220px);;
+    }
+    .tt-scroll::-webkit-scrollbar { height: 8px; }
+    .tt-scroll::-webkit-scrollbar-thumb { background: #CDD7E5; border-radius: 4px; }
+    .tt {
+      display: flex;
+      align-items: stretch;
+      min-width: max-content;
+    }
+    .time-axis-col {
+      width: 54px;
+      flex-shrink: 0;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: white;
+      border-right: 1.5px solid #CDD7E5;
+      display: flex;
+      flex-direction: column;
+    }
+    .empty-corner {
+      height: 48px;
+      flex-shrink: 0;
+      background: #F8F9FB;
+      border-bottom: 1.5px solid #CDD7E5;
+    }
+    .time-axis-body {
+      position: relative;
+      flex: 1;
+    }
+    .time-label {
+      position: absolute;
+      right: 6px;
+      font-size: 10px;
+      color: #888;
+      font-weight: bold;
+      font-family: 'Roboto Mono', 'Menlo', monospace;
+      transform: translateY(-50%);
+      letter-spacing: 0.3px;
+    }
+    .time-label.major {
+      color: #1F4E78;
+      font-size: 11px;
+    }
+    .day-col {
+      width: 92px;
+      flex-shrink: 0;
+      border-right: 1px solid #ECEFF1;
+      display: flex;
+      flex-direction: column;
+    }
+    .day-col:last-child { border-right: none; }
+    .day-header {
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #F8F9FB;
+      border-bottom: 1.5px solid #CDD7E5;
+      font-weight: bold;
+      font-size: 12px;
+      color: #555;
+      position: relative;
+    }
+    .day-header.sat { color: #1565C0; background: #F0F7FF; }
+    .day-header.sun { color: #C62828; background: #FFF4F4; }
+    .day-header.today {
+      background: linear-gradient(135deg, #1F4E78, #2E75B6);
+      color: white;
+    }
+    .day-header.today.sat,
+    .day-header.today.sun { color: white; }
+    .day-header .date-md {
+      font-size: 13px;
+      line-height: 1.1;
+    }
+    .day-header .date-wd {
+      font-size: 10px;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+    .day-restriction {
+      position: absolute;
+      top: 2px;
+      right: 4px;
+      font-size: 10px;
+      color: #FB8C00;
+      font-weight: bold;
+    }
+    .day-header.today .day-restriction { color: #FFD54F; }
+    .day-body {
+      flex: 1;
+      position: relative;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          transparent,
+          transparent calc(var(--hour-px) - 1px),
+          #ECEFF4 calc(var(--hour-px) - 1px),
+          #ECEFF4 var(--hour-px)
+        );
+    }
+    .track-half-hour-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      border-top: 1px dashed #F0F2F5;
+      pointer-events: none;
+    }
+    .reservation-block {
+      position: absolute;
+      left: 3px;
+      right: 3px;
+      background: linear-gradient(135deg, #FFF8E1 0%, #FFE9A8 100%);
+      border-left: 3px solid #FFB300;
+      border-radius: 5px;
+      padding: 4px 6px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reservation-block:hover {
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      filter: brightness(1.02);
+    }
+    .reservation-block:active { transform: scale(0.98); }
+    .res-band {
+      font-size: 11px;
+      font-weight: bold;
+      color: #4A3800;
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .res-time {
+      font-size: 9px;
+      color: #8A6B00;
+      font-family: 'Roboto Mono', 'Menlo', monospace;
+      margin-top: 1px;
+    }
+    .reservation-block.small .res-time { display: none; }
+    .reservation-block.small {
+      padding: 2px 5px;
+    }
+    .reservation-block.small .res-band { font-size: 10px; }
+
+    .now-indicator {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #FF3D00;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1F4E78, #2E75B6);
+      color: white;
+      border: none;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(31,78,120,0.4);
+      z-index: 100;
+      -webkit-tap-highlight-color: transparent;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab:active { transform: scale(0.95); }
+
+    /* ==================== モーダル ==================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 1000;
+      padding: 0;
+    }
+    .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @media (min-width: 600px) { .modal-overlay { align-items: center; padding: 16px; } }
+    .modal {
+      background: white;
+      width: 100%;
+      max-width: 520px;
+      max-height: 92vh;
+      overflow-y: auto;
+      border-radius: 16px 16px 0 0;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(20px); } to { transform: translateY(0); } }
+    @media (min-width: 600px) { .modal { border-radius: 16px; } }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #ECEFF1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+    .modal-title { font-size: 17px; font-weight: bold; color: #1F4E78; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: #999;
+      cursor: pointer;
+      padding: 4px 8px;
+      font-family: inherit;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer { padding: 14px 20px 22px; display: flex; gap: 10px; }
+    .modal-footer .btn { flex: 1; }
+
+    .field { margin-bottom: 16px; }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: bold;
+      color: #1F4E78;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .required { color: #C62828; font-size: 11px; margin-left: 4px; }
+    select, input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 16px;
+      border: 1.5px solid #D0D7DE;
+      border-radius: 9px;
+      background: white;
+      font-family: inherit;
+      color: #2A2A2A;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    select {
+      background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22 width%3D%2212%22 height%3D%228%22 viewBox%3D%220 0 12 8%22%3E%3Cpath fill%3D%22%23666%22 d%3D%22M6 8L0 0h12z%22%2F%3E%3C%2Fsvg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 10px;
+      padding-right: 36px;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #2E75B6;
+      box-shadow: 0 0 0 3px rgba(46,117,182,0.15);
+    }
+    .row { display: flex; gap: 10px; }
+    .row > .field { flex: 1; min-width: 0; }
+
+    .type-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      background: #F0F4F8;
+      padding: 4px;
+      border-radius: 10px;
+    }
+    .type-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: bold;
+      color: #555;
+      cursor: pointer;
+      border-radius: 7px;
+      transition: all 0.15s;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .type-tab.active {
+      background: white;
+      color: #1F4E78;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .summary {
+      background: linear-gradient(135deg, #EEF5FB, #E0EBF7);
+      border-left: 4px solid #2E75B6;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin: 14px 0;
+      font-size: 13px;
+      color: #1F4E78;
+      line-height: 1.6;
+    }
+    .summary .band-name { font-weight: bold; font-size: 15px; }
+    .summary-empty { color: #888; font-style: italic; }
+
+    .restriction-banner {
+      background: #FFF3E0;
+      border-left: 3px solid #FB8C00;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #6D4500;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .msg {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+    }
+    .msg.error { background: #FCE4E4; color: #B71C1C; border: 1px solid #EF9A9A; display: block; }
+    .msg.success { background: #E8F5E9; color: #1B5E20; border: 1px solid #A5D6A7; display: block; }
+
+    .btn {
+      padding: 13px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #1F4E78, #2E75B6);
+      color: white;
+      box-shadow: 0 2px 8px rgba(31,78,120,0.25);
+    }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:disabled { background: #B0B0B0; cursor: not-allowed; box-shadow: none; }
+    .btn-cancel { background: #E0E0E0; color: #333; }
+    .btn-danger { background: #C62828; color: white; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-screen { text-align: center; padding: 60px 20px; color: #666; }
+    .loading-screen .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #E0E0E0;
+      border-top-color: #2E75B6;
+      margin: 0 auto 16px;
+      display: block;
+    }
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #2A2A2A;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: bold;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity 0.25s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .toast.error { background: #B71C1C; }
+    .toast.success { background: #2E7D32; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="app-header">
+      <h1>🎵 部室予約</h1>
+      <p>七夕祭 2026 / 8:30-21:00 / 最大1時間30分</p>
+    </div>
+
+    <div id="loading" class="loading-screen">
+      <span class="spinner"></span>
+      <div>読み込み中...</div>
+    </div>
+
+    <div id="main-content" style="display:none;">
+      <div class="timetable-card">
+        <div class="card-title-row">
+          <div class="card-title">📅 予約状況</div>
+          <div class="card-hint">予約をタップで取消 / 横スクロール可</div>
+        </div>
+        <div class="tt-scroll" id="tt-scroll">
+          <div class="tt" id="tt">
+            <div class="time-axis-col">
+              <div class="empty-corner"></div>
+              <div class="time-axis-body" id="time-axis"></div>
+            </div>
+            <!-- 日付列はJSで動的生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="fab" id="fab" onclick="openReservationModal()" style="display:none;">＋</button>
+
+  <div class="modal-overlay" id="reservation-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">新規予約</div>
+        <button type="button" class="modal-close" onclick="closeReservationModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <span class="field-label">バンド名<span class="required">必須</span></span>
+          <select id="form-band"></select>
+        </div>
+        <div class="field">
+          <span class="field-label">日付<span class="required">必須</span></span>
+          <select id="form-date"></select>
+        </div>
+
+        <div class="type-tabs">
+          <button type="button" class="type-tab active" data-type="class" onclick="switchType('class')">授業時間</button>
+          <button type="button" class="type-tab" data-type="free" onclick="switchType('free')">時間を指定</button>
+        </div>
+
+        <div id="form-class">
+          <div class="field">
+            <span class="field-label">授業時間</span>
+            <select id="form-class-select"></select>
+          </div>
+        </div>
+
+        <div id="form-free" style="display:none;">
+          <div class="row">
+            <div class="field">
+              <span class="field-label">開始時刻</span>
+              <select id="form-start"></select>
+            </div>
+            <div class="field">
+              <span class="field-label">終了時刻</span>
+              <select id="form-end"></select>
+            </div>
+          </div>
+        </div>
+
+        <div id="form-restriction" class="restriction-banner" style="display:none;"></div>
+
+        <div class="summary" id="form-summary">
+          <span class="summary-empty">バンドと時間を選択してください</span>
+        </div>
+
+        <div id="form-msg" class="msg"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeReservationModal()">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="submit-btn" onclick="submitReservation()">予約する</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cancel-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" style="color:#C62828;">予約をキャンセル</div>
+        <button type="button" class="modal-close" onclick="closeCancelModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="font-size:14px; line-height:1.6; margin-bottom:12px;">
+          以下の予約を取り消します。
+        </div>
+        <div class="summary" id="cancel-detail" style="border-left-color:#C62828; background:#FFEBEE; color:#B71C1C;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-cancel" onclick="closeCancelModal()" id="cancel-no">戻る</button>
+        <button type="button" class="btn btn-danger" onclick="confirmCancel()" id="cancel-yes">取消する</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // ==================== 設定 ====================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwZ5Ij_P3NXtu7Ywb6RjrHQhOj0Ld-oTTWkTXRVzW6-DKW_LVUeI6_JkzKrzt-hE6H_/exec';
+
+    // タイムテーブル表示の定数
+    const DAY_START_MIN = 8 * 60 + 30;
+    const DAY_END_MIN = 21 * 60;
+    const PX_PER_MIN = 1.0;
+    const TOTAL_HEIGHT = (DAY_END_MIN - DAY_START_MIN) * PX_PER_MIN; // 750px
+
+    let CONFIG = null;
+    let BANDS = [];
+    let RESERVATIONS = [];
+    let currentType = 'class';
+    let pendingCancel = null;
+
+    async function apiGet() {
+      const res = await fetch(API_URL + '?action=getData');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }
+    async function apiPost(payload) {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+        redirect: 'follow',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    }
+
+    async function init() {
+      try {
+        const data = await apiGet();
+        if (!data.ok) throw new Error(data.msg || 'データ取得失敗');
+        CONFIG = data.config;
+        BANDS = data.bands || [];
+        RESERVATIONS = data.reservations || [];
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('main-content').style.display = 'block';
+        document.getElementById('fab').style.display = 'flex';
+
+        renderTimetable();
+        setupForm();
+        // 今日の列までスクロール
+        scrollToToday();
+      } catch (err) {
+        document.getElementById('loading').innerHTML =
+          '<div style="color:#C00000; padding:20px;">⚠ データ取得失敗<br><span style="font-size:12px;">' + esc(err.message) + '</span></div>';
+      }
+    }
+
+    // ==================== タイムテーブル全体描画 ====================
+    function renderTimetable() {
+      const tt = document.getElementById('tt');
+      tt.style.setProperty('--hour-px', (60 * PX_PER_MIN) + 'px');
+
+      // 時間軸の高さを設定
+      const axisBody = document.getElementById('time-axis');
+      axisBody.style.height = TOTAL_HEIGHT + 'px';
+
+      // 時間軸ラベル
+      let axisHtml = '';
+      for (let m = DAY_START_MIN; m <= DAY_END_MIN; m += 30) {
+        const top = (m - DAY_START_MIN) * PX_PER_MIN;
+        const h = Math.floor(m / 60);
+        const mm = m % 60;
+        const label = pad2(h) + ':' + pad2(mm);
+        const isMajor = (mm === 0);
+        axisHtml += `<div class="time-label${isMajor ? ' major' : ''}" style="top:${top}px;">${label}</div>`;
+      }
+      axisBody.innerHTML = axisHtml;
+
+      // 既存の day-col を削除して再生成
+      tt.querySelectorAll('.day-col').forEach(el => el.remove());
+
+      const todayStr = formatDateLocal(new Date());
+
+      for (const d of CONFIG.dates) {
+        const col = document.createElement('div');
+        col.className = 'day-col';
+        col.dataset.date = d.key;
+
+        // ヘッダ
+        let headerCls = 'day-header';
+        if (d.weekday === 6) headerCls += ' sat';
+        else if (d.weekday === 0) headerCls += ' sun';
+        if (d.key === todayStr) headerCls += ' today';
+
+        const restriction = CONFIG.restrictions && CONFIG.restrictions[d.key];
+        const restrictionMark = restriction ? `<div class="day-restriction" title="${esc(restriction.note)}">⚠</div>` : '';
+
+        // ラベルを「5/25」「(月)」に分割
+        const m = d.label.match(/^(\d+\/\d+)\s*\((.+)\)$/);
+        const md = m ? m[1] : d.label;
+        const wd = m ? m[2] : '';
+
+        col.innerHTML = `
+          <div class="${headerCls}">
+            ${restrictionMark}
+            <div class="date-md">${esc(md)}</div>
+            <div class="date-wd">(${esc(wd)})</div>
+          </div>
+          <div class="day-body" data-date="${d.key}" style="height:${TOTAL_HEIGHT}px;"></div>
+        `;
+        tt.appendChild(col);
+
+        // 半時間ライン
+        const body = col.querySelector('.day-body');
+        let bodyHtml = '';
+        for (let m2 = DAY_START_MIN + 30; m2 < DAY_END_MIN; m2 += 60) {
+          const top = (m2 - DAY_START_MIN) * PX_PER_MIN;
+          bodyHtml += `<div class="track-half-hour-line" style="top:${top}px;"></div>`;
+        }
+
+        // 現在時刻インジケータ（今日の列のみ）
+        if (d.key === todayStr) {
+          const now = new Date();
+          const nowMin = now.getHours() * 60 + now.getMinutes();
+          if (nowMin >= DAY_START_MIN && nowMin <= DAY_END_MIN) {
+            const top = (nowMin - DAY_START_MIN) * PX_PER_MIN;
+            bodyHtml += `<div class="now-indicator" style="top:${top}px;"></div>`;
+          }
+        }
+
+        // この日の予約
+        const dayResList = RESERVATIONS
+          .filter(r => r.date === d.key)
+          .sort((a, b) => a.start.localeCompare(b.start));
+        for (const r of dayResList) {
+          const sMin = toMin(r.start);
+          const eMin = toMin(r.end);
+          const top = Math.max(0, (sMin - DAY_START_MIN) * PX_PER_MIN);
+          const height = Math.max(18, (eMin - sMin) * PX_PER_MIN - 2);
+          const isSmall = (eMin - sMin) <= 30;
+          bodyHtml += `
+            <div class="reservation-block${isSmall ? ' small' : ''}" style="top:${top}px; height:${height}px;" onclick="openCancelModal('${esc(r.id)}')">
+              <div class="res-band">${esc(r.band)}</div>
+              <div class="res-time">${r.start}〜${r.end}</div>
+            </div>
+          `;
+        }
+        body.innerHTML = bodyHtml;
+      }
+    }
+
+    function scrollToToday() {
+      const todayStr = formatDateLocal(new Date());
+      const todayCol = document.querySelector(`.day-col[data-date="${todayStr}"]`);
+      const scrollEl = document.getElementById('tt-scroll');
+      if (todayCol && scrollEl) {
+        // スクロール位置: 今日の列を左端に近づける（時間軸列の右隣）
+        const offset = todayCol.offsetLeft - 60;
+        scrollEl.scrollTo({ left: Math.max(0, offset), behavior: 'smooth' });
+      }
+    }
+
+    // ==================== 予約フォーム ====================
+    function setupForm() {
+      const bandSel = document.getElementById('form-band');
+      if (BANDS.length === 0) {
+        bandSel.innerHTML = '<option value="">バンドが未登録です</option>';
+        bandSel.disabled = true;
+      } else {
+        bandSel.innerHTML = '<option value="">― 選択 ―</option>' +
+          BANDS.map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+      }
+      document.getElementById('form-date').innerHTML = CONFIG.dates.map(d =>
+        `<option value="${d.key}">${esc(d.label)}</option>`
+      ).join('');
+      document.getElementById('form-class-select').innerHTML = CONFIG.classSlots.map((c, i) =>
+        `<option value="${i}">${esc(c.name)} (${c.start}-${c.end})</option>`
+      ).join('');
+      document.getElementById('form-start').innerHTML = CONFIG.freeTimeChoices.map(t =>
+        `<option value="${t}">${t}</option>`
+      ).join('');
+      document.getElementById('form-end').innerHTML = CONFIG.freeTimeChoices.map(t =>
+        `<option value="${t}">${t}</option>`
+      ).join('');
+      document.getElementById('form-end').value = CONFIG.freeTimeChoices[1] || '09:00';
+
+      // デフォルトで今日（or 最も近い未来日）を選択
+      const todayStr = formatDateLocal(new Date());
+      const todayOpt = CONFIG.dates.find(d => d.key === todayStr) || CONFIG.dates[0];
+      if (todayOpt) document.getElementById('form-date').value = todayOpt.key;
+
+      ['form-band','form-date','form-class-select','form-start','form-end'].forEach(id => {
+        document.getElementById(id).addEventListener('change', updateFormSummary);
+      });
+    }
+
+    function openReservationModal() {
+      switchType('class');
+      hideFormMsg();
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = false;
+      btn.textContent = '予約する';
+      document.getElementById('reservation-modal').classList.add('show');
+      updateFormSummary();
+    }
+    function closeReservationModal() {
+      document.getElementById('reservation-modal').classList.remove('show');
+    }
+
+    function switchType(type) {
+      currentType = type;
+      document.querySelectorAll('.type-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.type === type);
+      });
+      document.getElementById('form-class').style.display = (type === 'class') ? 'block' : 'none';
+      document.getElementById('form-free').style.display = (type === 'free') ? 'block' : 'none';
+      updateFormSummary();
+    }
+
+    function getFormTimeRange() {
+      if (currentType === 'class') {
+        const idx = parseInt(document.getElementById('form-class-select').value, 10);
+        const c = CONFIG.classSlots[idx];
+        if (!c) return null;
+        return { start: c.start, end: c.end, type: c.name };
+      } else {
+        const start = document.getElementById('form-start').value;
+        const end = document.getElementById('form-end').value;
+        return { start, end, type: '自由' };
+      }
+    }
+
+    function updateFormSummary() {
+      hideFormMsg();
+      const band = document.getElementById('form-band').value;
+      const dateKey = document.getElementById('form-date').value;
+      const range = getFormTimeRange();
+      const summaryEl = document.getElementById('form-summary');
+      const restrictionEl = document.getElementById('form-restriction');
+
+      // 制限バナー（選択中の日付に制限があれば表示）
+      const restriction = dateKey && CONFIG.restrictions && CONFIG.restrictions[dateKey];
+      if (restriction) {
+        restrictionEl.textContent = '⚠ ' + restriction.note;
+        restrictionEl.style.display = 'block';
+      } else {
+        restrictionEl.style.display = 'none';
+      }
+
+      if (!band || !dateKey || !range) {
+        summaryEl.innerHTML = '<span class="summary-empty">バンドと時間を選択してください</span>';
+        return;
+      }
+
+      const dateLabel = CONFIG.dates.find(d => d.key === dateKey)?.label || dateKey;
+      summaryEl.innerHTML =
+        `<div class="band-name">${esc(band)}</div>` +
+        `${esc(dateLabel)} / ${range.start} 〜 ${range.end}`;
+
+      const startMin = toMin(range.start);
+      const endMin = toMin(range.end);
+      if (endMin <= startMin) {
+        showFormMsg('⚠ 終了時刻は開始時刻より後にしてください。', 'error');
+        return;
+      }
+      if (endMin - startMin > CONFIG.maxDurationMin) {
+        showFormMsg(`⚠ 最大${CONFIG.maxDurationMin}分までしか予約できません。`, 'error');
+        return;
+      }
+      if (restriction && endMin > restriction.maxEndMin) {
+        showFormMsg('⚠ ' + restriction.note, 'error');
+        return;
+      }
+      const conflict = RESERVATIONS.find(r => {
+        if (r.date !== dateKey) return false;
+        const rs = toMin(r.start), re = toMin(r.end);
+        return startMin < re && rs < endMin;
+      });
+      if (conflict) {
+        showFormMsg(`⚠ ${conflict.start}〜${conflict.end} に「${conflict.band}」が予約済みです。`, 'error');
+      }
+    }
+
+    async function submitReservation() {
+      const band = document.getElementById('form-band').value;
+      const dateKey = document.getElementById('form-date').value;
+      const range = getFormTimeRange();
+
+      if (!band) { showFormMsg('バンド名を選択してください。', 'error'); return; }
+      if (!dateKey || !range) { showFormMsg('日付と時間を選択してください。', 'error'); return; }
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>送信中...';
+      hideFormMsg();
+
+      try {
+        const res = await apiPost({
+          action: 'create',
+          band: band,
+          date: dateKey,
+          start: range.start,
+          end: range.end,
+          type: range.type,
+        });
+        if (res.ok) {
+          RESERVATIONS.push(res.reservation);
+          closeReservationModal();
+          renderTimetable();
+          showToast('✓ 予約しました', 'success');
+        } else {
+          showFormMsg('✗ ' + res.msg, 'error');
+          btn.disabled = false;
+          btn.textContent = '予約する';
+          await refreshData();
+        }
+      } catch (err) {
+        showFormMsg('通信エラー: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = '予約する';
+      }
+    }
+
+    function openCancelModal(id) {
+      const r = RESERVATIONS.find(x => x.id === id);
+      if (!r) return;
+      pendingCancel = r;
+      const dateLabel = CONFIG.dates.find(d => d.key === r.date)?.label || r.date;
+      document.getElementById('cancel-detail').innerHTML =
+        `<div class="band-name">${esc(r.band)}</div>` +
+        `${esc(dateLabel)} / ${r.start} 〜 ${r.end}`;
+      const yes = document.getElementById('cancel-yes');
+      yes.disabled = false;
+      yes.textContent = '取消する';
+      document.getElementById('cancel-modal').classList.add('show');
+    }
+    function closeCancelModal() {
+      document.getElementById('cancel-modal').classList.remove('show');
+      pendingCancel = null;
+    }
+    async function confirmCancel() {
+      if (!pendingCancel) return;
+      const yes = document.getElementById('cancel-yes');
+      const no = document.getElementById('cancel-no');
+      yes.disabled = true;
+      no.disabled = true;
+      yes.innerHTML = '<span class="spinner"></span>処理中...';
+
+      try {
+        const res = await apiPost({
+          action: 'cancel',
+          id: pendingCancel.id,
+        });
+        if (res.ok) {
+          RESERVATIONS = RESERVATIONS.filter(r => r.id !== pendingCancel.id);
+          closeCancelModal();
+          renderTimetable();
+          showToast('✓ キャンセルしました', 'success');
+        } else {
+          showToast('✗ ' + res.msg, 'error');
+          yes.disabled = false;
+          no.disabled = false;
+          yes.textContent = '取消する';
+          await refreshData();
+        }
+      } catch (err) {
+        showToast('通信エラー: ' + err.message, 'error');
+        yes.disabled = false;
+        no.disabled = false;
+        yes.textContent = '取消する';
+      }
+    }
+
+    async function refreshData() {
+      try {
+        const data = await apiGet();
+        if (data.ok) {
+          RESERVATIONS = data.reservations || [];
+          BANDS = data.bands || [];
+          renderTimetable();
+        }
+      } catch (e) { /* ignore */ }
+    }
+
+    function toMin(t) {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    }
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    function formatDateLocal(d) {
+      return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+
+    function showFormMsg(text, kind) {
+      const el = document.getElementById('form-msg');
+      el.textContent = text;
+      el.className = 'msg ' + kind;
+    }
+    function hideFormMsg() {
+      document.getElementById('form-msg').className = 'msg';
+    }
+
+    let toastTimer = null;
+    function showToast(text, kind) {
+      const t = document.getElementById('toast');
+      t.textContent = text;
+      t.className = 'toast ' + (kind || '') + ' show';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.classList.remove('show'); }, 2500);
+    }
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+        ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    init();
+  </script>
+</body>
+</html>
